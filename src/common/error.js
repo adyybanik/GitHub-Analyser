@@ -41,6 +41,8 @@ class CustomError extends Error {
   static GRAPHQL_ERROR = "GRAPHQL_ERROR";
   static GITHUB_REST_API_ERROR = "GITHUB_REST_API_ERROR";
   static WAKATIME_ERROR = "WAKATIME_ERROR";
+  static API_ERROR = "API_ERROR";
+  static MISSING_PARAMETER = "MISSING_PARAMETER";
 }
 
 /**
