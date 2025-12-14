@@ -30,7 +30,10 @@ const validateUsername = (username) => {
   const trimmedUsername = username.trim();
 
   if (trimmedUsername.length === 0) {
-    throw new CustomError("Username cannot be empty", CustomError.MISSING_PARAMETER);
+    throw new CustomError(
+      "Username cannot be empty",
+      CustomError.MISSING_PARAMETER,
+    );
   }
 
   if (trimmedUsername.length > 39) {
@@ -70,7 +73,10 @@ const validateStringInput = (value, fieldName, maxLength = 200) => {
   const trimmed = value.trim();
 
   if (trimmed.length === 0) {
-    throw new CustomError(`${fieldName} cannot be empty`, CustomError.MISSING_PARAMETER);
+    throw new CustomError(
+      `${fieldName} cannot be empty`,
+      CustomError.MISSING_PARAMETER,
+    );
   }
 
   if (trimmed.length > maxLength) {
@@ -95,7 +101,10 @@ const validateStringInput = (value, fieldName, maxLength = 200) => {
 const validateSkills = (skillsString, fieldName, required = false) => {
   if (!skillsString) {
     if (required) {
-      throw new CustomError(`${fieldName} is required`, CustomError.MISSING_PARAMETER);
+      throw new CustomError(
+        `${fieldName} is required`,
+        CustomError.MISSING_PARAMETER,
+      );
     }
     return [];
   }
@@ -159,7 +168,11 @@ const checkRateLimit = (identifier, maxRequests = 10, windowMs = 60000) => {
 
   if (!rateLimitMap.has(key)) {
     rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs };
+    return {
+      allowed: true,
+      remaining: maxRequests - 1,
+      resetAt: now + windowMs,
+    };
   }
 
   const record = rateLimitMap.get(key);
@@ -168,7 +181,11 @@ const checkRateLimit = (identifier, maxRequests = 10, windowMs = 60000) => {
   if (now > record.resetAt) {
     record.count = 1;
     record.resetAt = now + windowMs;
-    return { allowed: true, remaining: maxRequests - 1, resetAt: record.resetAt };
+    return {
+      allowed: true,
+      remaining: maxRequests - 1,
+      resetAt: record.resetAt,
+    };
   }
 
   // Check if limit exceeded
@@ -212,13 +229,8 @@ const getClientIdentifier = (req) => {
  * @returns {import("../src/analyzer/types").JobRole} Job role object
  */
 const parseJobRole = (req) => {
-  const {
-    job_title,
-    required_skills,
-    nice_to_have_skills,
-    seniority,
-    focus,
-  } = req.query;
+  const { job_title, required_skills, nice_to_have_skills, seniority, focus } =
+    req.query;
 
   if (!job_title || !required_skills || !seniority || !focus) {
     throw new MissingParamError([
@@ -233,7 +245,11 @@ const parseJobRole = (req) => {
   const validatedJobTitle = validateStringInput(job_title, "job_title", 100);
 
   // Validate skills
-  const validatedRequiredSkills = validateSkills(required_skills, "required_skills", true);
+  const validatedRequiredSkills = validateSkills(
+    required_skills,
+    "required_skills",
+    true,
+  );
   const validatedNiceToHaveSkills = validateSkills(
     nice_to_have_skills,
     "nice_to_have_skills",
@@ -280,7 +296,10 @@ export default async (req, res) => {
   if (!rateLimit.allowed) {
     res.setHeader("X-RateLimit-Limit", "10");
     res.setHeader("X-RateLimit-Remaining", "0");
-    res.setHeader("X-RateLimit-Reset", new Date(rateLimit.resetAt).toISOString());
+    res.setHeader(
+      "X-RateLimit-Reset",
+      new Date(rateLimit.resetAt).toISOString(),
+    );
     return res.status(429).json({
       error: "Rate limit exceeded. Maximum 10 requests per minute.",
       retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000),
@@ -292,12 +311,8 @@ export default async (req, res) => {
   res.setHeader("X-RateLimit-Remaining", rateLimit.remaining.toString());
   res.setHeader("X-RateLimit-Reset", new Date(rateLimit.resetAt).toISOString());
 
-  const {
-    username,
-    include_all_commits,
-    cache_seconds,
-    openai_model,
-  } = req.query;
+  const { username, include_all_commits, cache_seconds, openai_model } =
+    req.query;
 
   // Validate username
   let validatedUsername;
@@ -326,22 +341,20 @@ export default async (req, res) => {
   // Validate OpenAI model if provided
   const validModels = ["gpt-4o", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"];
   const requestedModel = openai_model || "gpt-4o";
-  const model = validModels.includes(requestedModel) ? requestedModel : "gpt-4o";
+  const model = validModels.includes(requestedModel)
+    ? requestedModel
+    : "gpt-4o";
 
   try {
     // Parse job role from query parameters
     const jobRole = parseJobRole(req);
 
     // Analyze candidate
-    const analysis = await analyzeCandidate(
-      validatedUsername,
-      jobRole,
-      {
-        include_all_commits: parseBoolean(include_all_commits),
-        openai_api_key: apiKey,
-        model: model,
-      },
-    );
+    const analysis = await analyzeCandidate(validatedUsername, jobRole, {
+      include_all_commits: parseBoolean(include_all_commits),
+      openai_api_key: apiKey,
+      model,
+    });
 
     // Set cache headers
     const cacheSeconds = resolveCacheSeconds({
@@ -375,4 +388,3 @@ export default async (req, res) => {
     });
   }
 };
-

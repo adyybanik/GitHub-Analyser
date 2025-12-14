@@ -14,10 +14,16 @@ import { request } from "../common/http.js";
  * @returns {"low" | "medium" | "high"} Commit frequency level
  */
 const calculateCommitFrequency = (totalCommits, accountAgeYears) => {
-  if (accountAgeYears === 0) return "low";
+  if (accountAgeYears === 0) {
+    return "low";
+  }
   const commitsPerYear = totalCommits / accountAgeYears;
-  if (commitsPerYear < 50) return "low";
-  if (commitsPerYear < 200) return "medium";
+  if (commitsPerYear < 50) {
+    return "low";
+  }
+  if (commitsPerYear < 200) {
+    return "medium";
+  }
   return "high";
 };
 
@@ -30,11 +36,17 @@ const calculateCommitFrequency = (totalCommits, accountAgeYears) => {
  * @returns {"sporadic" | "consistent" | "very_consistent"} Commit consistency
  */
 const calculateCommitConsistency = (totalCommits, accountAgeYears) => {
-  if (accountAgeYears === 0) return "sporadic";
+  if (accountAgeYears === 0) {
+    return "sporadic";
+  }
   const commitsPerYear = totalCommits / accountAgeYears;
   const commitsPerMonth = commitsPerYear / 12;
-  if (commitsPerMonth < 2) return "sporadic";
-  if (commitsPerMonth < 10) return "consistent";
+  if (commitsPerMonth < 2) {
+    return "sporadic";
+  }
+  if (commitsPerMonth < 10) {
+    return "consistent";
+  }
   return "very_consistent";
 };
 
@@ -46,13 +58,19 @@ const calculateCommitConsistency = (totalCommits, accountAgeYears) => {
  * @returns {"poor" | "average" | "strong"} README quality assessment
  */
 const assessReadmeQuality = (repositories) => {
-  if (!repositories || repositories.length === 0) return "poor";
+  if (!repositories || repositories.length === 0) {
+    return "poor";
+  }
   const reposWithDescriptions = repositories.filter(
     (repo) => repo.description && repo.description.length > 20,
   ).length;
   const ratio = reposWithDescriptions / repositories.length;
-  if (ratio < 0.3) return "poor";
-  if (ratio < 0.7) return "average";
+  if (ratio < 0.3) {
+    return "poor";
+  }
+  if (ratio < 0.7) {
+    return "average";
+  }
   return "strong";
 };
 
@@ -63,13 +81,19 @@ const assessReadmeQuality = (repositories) => {
  * @returns {"low" | "medium" | "high"} Documentation signal
  */
 const assessDocumentationSignal = (repositories) => {
-  if (!repositories || repositories.length === 0) return "low";
+  if (!repositories || repositories.length === 0) {
+    return "low";
+  }
   const reposWithDescriptions = repositories.filter(
     (repo) => repo.description && repo.description.length > 30,
   ).length;
   const ratio = reposWithDescriptions / repositories.length;
-  if (ratio < 0.4) return "low";
-  if (ratio < 0.7) return "medium";
+  if (ratio < 0.4) {
+    return "low";
+  }
+  if (ratio < 0.7) {
+    return "medium";
+  }
   return "high";
 };
 
@@ -85,9 +109,15 @@ const calculateCollaborationSignals = (repositories, contributedTo) => {
   if (totalRepos === 0) {
     return { solo_projects_ratio: 1, team_projects_ratio: 0 };
   }
-  const teamProjectsRatio = Math.min(contributedTo / (totalRepos + contributedTo), 1);
+  const teamProjectsRatio = Math.min(
+    contributedTo / (totalRepos + contributedTo),
+    1,
+  );
   const soloProjectsRatio = 1 - teamProjectsRatio;
-  return { solo_projects_ratio: soloProjectsRatio, team_projects_ratio: teamProjectsRatio };
+  return {
+    solo_projects_ratio: soloProjectsRatio,
+    team_projects_ratio: teamProjectsRatio,
+  };
 };
 
 /**
@@ -195,7 +225,10 @@ export const aggregateGitHubData = async (username, options = {}) => {
     const topRepositories = [];
 
     // Calculate commit metrics
-    const commitFrequency = calculateCommitFrequency(stats.totalCommits, accountAgeYears);
+    const commitFrequency = calculateCommitFrequency(
+      stats.totalCommits,
+      accountAgeYears,
+    );
     const commitConsistency = calculateCommitConsistency(
       stats.totalCommits,
       accountAgeYears,
@@ -249,4 +282,3 @@ export const aggregateGitHubData = async (username, options = {}) => {
 };
 
 export default aggregateGitHubData;
-

@@ -65,7 +65,7 @@ export const analyzeWithOpenAI = async (
     let analysis;
     try {
       analysis = JSON.parse(content);
-    } catch (parseError) {
+    } catch {
       logger.error("Failed to parse OpenAI response:", content);
       throw new CustomError(
         "Invalid JSON response from OpenAI",
@@ -90,17 +90,19 @@ export const analyzeWithOpenAI = async (
     // Validate confidence_percentage if present
     if (
       analysis.hiring_recommendation.confidence_percentage !== undefined &&
-      (typeof analysis.hiring_recommendation.confidence_percentage !== "number" ||
+      (typeof analysis.hiring_recommendation.confidence_percentage !==
+        "number" ||
         analysis.hiring_recommendation.confidence_percentage < 0 ||
         analysis.hiring_recommendation.confidence_percentage > 100)
     ) {
-      logger.warn(
-        "Invalid confidence_percentage, ensuring it's between 0-100",
-      );
+      logger.warn("Invalid confidence_percentage, ensuring it's between 0-100");
       // Clamp to valid range
       analysis.hiring_recommendation.confidence_percentage = Math.max(
         0,
-        Math.min(100, analysis.hiring_recommendation.confidence_percentage || 50),
+        Math.min(
+          100,
+          analysis.hiring_recommendation.confidence_percentage || 50,
+        ),
       );
     }
 
@@ -108,10 +110,7 @@ export const analyzeWithOpenAI = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 401) {
-        throw new CustomError(
-          "Invalid OpenAI API key",
-          CustomError.API_ERROR,
-        );
+        throw new CustomError("Invalid OpenAI API key", CustomError.API_ERROR);
       }
       if (error.response?.status === 429) {
         throw new CustomError(
@@ -130,4 +129,3 @@ export const analyzeWithOpenAI = async (
 };
 
 export default analyzeWithOpenAI;
-
