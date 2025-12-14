@@ -4,11 +4,5 @@
       "memory": 256,
       "maxDuration": 60
     }
-  },
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "https://github.com/adyybanik/GitHub-Analyser"
-    }
-  ]
+  }
 }
